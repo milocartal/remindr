@@ -1,0 +1,32 @@
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS groups;
+DROP TABLE IF EXISTS reminder;
+DROP TABLE IF EXISTS user_group;
+
+CREATE TABLE users(
+    idU int(255) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    nameU varchar(50) NOT NULL
+);
+
+CREATE TABLE groups(
+    idG int(255) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    nameG varchar(30) NOT NULL
+);
+
+CREATE TABLE reminder(
+    idR int(255) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    title varchar(30) NOT NULL,
+    rendu DATETIME NOT NULL,
+    description varchar(100),
+    color varchar(50) NOT NULL,
+    idG int(255) NOT NULL,
+    CONSTRAINT FK_reminder FOREIGN KEY (idG) REFERENCES groupe (idG) ON DELETE CASCADE
+);
+
+CREATE TABLE user_group(
+    idU int(255) NOT NULL,
+    idG int(255) NOT NULL,
+    CONSTRAINT FK_u FOREIGN KEY (idU) REFERENCES users (idU) ON DELETE CASCADE,
+    CONSTRAINT FK_g FOREIGN KEY (idG) REFERENCES groups (idG) ON DELETE CASCADE,
+    PRIMARY KEY (idU, idG)
+)

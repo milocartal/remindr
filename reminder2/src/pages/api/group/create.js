@@ -1,11 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { getServerSession } from "next-auth"
-import prisma from "../auth/prisma"
-
-const session = await getServerSession();
-
+import prisma from "../../../utils/prisma"
 
 export default async function handler(req, res) {
+  const session = await getServerSession();
   const group = await prisma.group.create({
     data: {
       name: req.body.name,

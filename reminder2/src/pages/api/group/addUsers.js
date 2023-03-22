@@ -1,5 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import prisma from "../auth/prisma"
+import prisma from "../../../utils/prisma"
 
 export default async function handler(req, res) {
   const useringroup = await prisma.useringroup.create({

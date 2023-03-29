@@ -3,96 +3,104 @@ import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
 import { useSession, signIn, signOut } from "next-auth/react"
+import React from 'react'
+import { useState } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
+
 export default function Component() {
+
   const { data: session } = useSession()
-  if(session) {
-    return <>
-      Signed in as {session.user.email} <br/>
-      <button onClick={() => signOut()}>Sign out</button>
-    </>
-  }
-  return <>
-    Not signed in <br/>
-    <button onClick={() => signIn()}>Sign in</button>
-  </>
-}
+  const [group_list, set_Group_list] = useState([])
 
-/*import React from "react";
-import { GetServerSideProps } from "next";
-import Layout from "../components/Layout";
-import Post, { PostProps } from "../components/Post";
-import { useSession, getSession } from "next-auth/react";
-import prisma from '../lib/prisma'
+  const get_group = async () => {
+    const response = await fetch('/api/group/', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    });
 
+    const data = await response.json();
+    console.log(data.value);
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
-  const session = await getSession({ req });
-  if (!session) {
-    res.statusCode = 403;
-    return { props: { drafts: [] } };
-  }
+    set_Group_list(data.value);
+    console.log("dans la valeur du map :", group_list);
 
-  const drafts = await prisma.post.findMany({
-    where: {
-      author: { email: session.user.email },
-      published: false,
-    },
-    include: {
-      author: {
-        select: { name: true },
-      },
-    },
-  });
-  return {
-    props: { drafts },
+    if (!response.ok) {
+      throw new Error(`Error! status: ${response.status}`);
+
+    }
   };
-};
 
-type Props = {
-  drafts: PostProps[];
-};
 
-const Drafts: React.FC<Props> = (props) => {
-  const {data: session}= useSession();
+  async function handleSubmit(event){
+    event.preventDefault()
+		const nameGroup = event.target.elements.groupName.value
+		const descGroup = event.target.elements.groupDesc.value
 
-  if (!session) {
-    return (
-      <Layout>
-        <h1>My Drafts</h1>
-        <div>You need to be authenticated to view this page.</div>
-      </Layout>
-    );
+    console.log(nameGroup);
+    console.log(descGroup);
+
+		const resp = await fetch('/api/group/create', {
+			method: "POST",
+
+			body: JSON.stringify({
+				name: nameGroup,
+				description: descGroup
+			})
+
+		})
+    .then(resp => resp.json())
+    get_group();
   }
 
-  return (
-    <Layout>
-      <div className="page">
-        <h1>My Drafts</h1>
-        <main>
-          {props.drafts.map((post) => (
-            <div key={post.id} className="post">
-              <Post post={post} />
-            </div>
-          ))}
-        </main>
-      </div>
-      <style jsx>{`
-        .post {
-          background: white;
-          transition: box-shadow 0.1s ease-in;
-        }
-        .post:hover {
-          box-shadow: 1px 1px 3px #aaa;
-        }
-        .post + .post {
-          margin-top: 2rem;
-        }
-      `}</style>
-    </Layout>
-  );
-};
 
-export default Drafts;*/
+  if (session) {
+
+    return (
+      <>
+        <header id="connect">
+          <button onClick={() => signOut()}>Sign out</button>
+          <img id='pp' src={session.user.image} title={session.user.name}></img>
+        </header>
+
+
+        <div id='content'>
+
+          <form onSubmit={handleSubmit}>
+            <input type="text" id="groupName" placeholder='Ajouter un groupe' />
+            <input type="text" id="groupDesc" placeholder='desc' />
+            <button type='sumbit'>+</button>
+          </form>
+
+          <div id='text_refresh'>
+            <h1>Liste de vos groupes : </h1>
+            <button id="refresh" onClick={get_group}>&#128257;</button>
+          </div>
+
+          <div id="group_list">
+            {
+              group_list.map((item) => {
+                return (
+                  <div class="group_card">
+                    <a href={"/group/" + item.id}>{item.name}</a>
+                  </div>
+                )
+              })
+            }
+          </div>
+
+        </div>
+
+      </>
+    )
+  }
+  return (
+    <>
+      <header id="connect">
+        <button onClick={() => signIn()}>Sign in</button>
+      </header>
+      <h1>Not signed in</h1>
+    </>
+  )
+}
